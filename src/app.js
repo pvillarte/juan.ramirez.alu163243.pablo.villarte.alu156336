@@ -23,7 +23,7 @@ const RomanConverterUI = (() => {
     const mode = elements.mode.value;
     const isIntToRoman = mode === "intToRoman";
 
-    elements.inputLabel.textContent = isIntToRoman ? "Integer (1–3999)" : "Roman numeral (I,V,X,L,C,D,M)";
+    elements.inputLabel.textContent = isIntToRoman ? "Integer (1-3999)" : "Roman numeral (I,V,X,L,C,D,M)";
     elements.input.value = "";
     clearOutputs();
 

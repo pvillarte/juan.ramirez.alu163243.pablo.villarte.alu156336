@@ -39,7 +39,7 @@ const RomanConverter = (() => {
 
   const integerToRoman = (n) => {
     if (!isIntegerInRange(n)) {
-      return { ok: false, error: "Integer must be in range 1–3999." };
+      return { ok: false, error: "Integer must be in range 1-3999." };
     }
 
     let remaining = n;
@@ -161,7 +161,7 @@ const RomanConverter = (() => {
     }
 
     if (!isIntegerInRange(sum)) {
-      return { ok: false, error: "Roman value out of supported range (1–3999)." };
+      return { ok: false, error: "Roman value out of supported range (1-3999)." };
     }
 
     return { ok: true, value: sum };
@@ -181,7 +181,7 @@ const RomanConverter = (() => {
       return { ok: false, error: "Integer input is not a safe number." };
     }
     if (!isIntegerInRange(n)) {
-      return { ok: false, error: "Integer must be in range 1–3999." };
+      return { ok: false, error: "Integer must be in range 1-3999." };
     }
     return { ok: true, value: n };
   };
