@@ -54,88 +54,135 @@ const RomanConverter = (() => {
 
     return { ok: true, value: out };
   };
+const validateRomanStrict = (raw) => {
+  const input = normalizeInput(raw);
+  if (!input.ok) return input;
 
-  const validateRomanStrict = (raw) => {
-    const input = String(raw ?? "").trim().toUpperCase();
-    if (input.length === 0) {
-      return { ok: false, error: "Input cannot be empty." };
+  const charCheck = validateCharacters(input.value);
+  if (!charCheck.ok) return charCheck;
+
+  const structureCheck = validateStructure(input.value);
+  if (!structureCheck.ok) return structureCheck;
+
+  const canonicalCheck = validateCanonical(input.value);
+  if (!canonicalCheck.ok) return canonicalCheck;
+
+  return { ok: true, value: input.value };
+};
+
+// ------------------ Helpers ------------------
+
+function normalizeInput(raw) {
+  const value = String(raw ?? "").trim().toUpperCase();
+  if (value.length === 0) {
+    return { ok: false, error: "Input cannot be empty." };
+  }
+  return { ok: true, value };
+}
+
+function validateCharacters(input) {
+  for (const ch of input) {
+    if (!romanValue[ch]) {
+      return { ok: false, error: `Invalid character "${ch}".` };
+    }
+  }
+  return { ok: true };
+}
+
+function validateStructure(input) {
+  let repeatCount = 1;
+  let lastChar = input[0];
+  let lastWasSubtractive = false;
+  let lastSubtractiveSmall = null;
+  let lastSubtractiveLarge = null;
+
+  for (let i = 1; i < input.length; i++) {
+    const current = input[i];
+    const prev = input[i - 1];
+    const currentValue = romanValue[current];
+    const prevValue = romanValue[prev];
+
+    repeatCount = current === lastChar ? repeatCount + 1 : 1;
+    lastChar = current;
+
+    const maxRepeat = romanTokenRules[current].maxRepeat;
+    if (repeatCount > maxRepeat) {
+      return { ok: false, error: `Invalid repetition of "${current}".` };
     }
 
-    for (const ch of input) {
-      if (!romanValue[ch]) {
-        return { ok: false, error: `Invalid character "${ch}".` };
-      }
+    if (prevValue < currentValue) {
+      const subtractCheck = validateSubtractivePair({
+        prev,
+        current,
+        repeatCount,
+        lastWasSubtractive,
+        lastSubtractiveSmall,
+        lastSubtractiveLarge
+      });
+      if (!subtractCheck.ok) return subtractCheck;
+
+      lastWasSubtractive = true;
+      lastSubtractiveSmall = prev;
+      lastSubtractiveLarge = current;
+    } else {
+      lastWasSubtractive = false;
     }
+  }
 
-    let repeatCount = 1;
-    let lastChar = input[0];
+  return { ok: true };
+}
 
-    let lastTokenValue = romanValue[lastChar];
-    let lastWasSubtractive = false;
+function validateSubtractivePair({
+  prev,
+  current,
+  repeatCount,
+  lastWasSubtractive,
+  lastSubtractiveSmall,
+  lastSubtractiveLarge
+}) {
+  const rules = romanTokenRules[prev];
 
-    let lastSubtractiveSmall = null;
-    let lastSubtractiveLarge = null;
+  if (!rules.canSubtractFrom.has(current)) {
+    return { ok: false, error: `Invalid subtractive pair "${prev}${current}".` };
+  }
 
-    for (let i = 1; i < input.length; i++) {
-      const current = input[i];
-      const currentValue = romanValue[current];
+  if (repeatCount !== 1) {
+    return {
+      ok: false,
+      error: `Invalid repetition before subtraction near "${prev}${current}".`
+    };
+  }
 
-      if (current === lastChar) {
-        repeatCount += 1;
-      } else {
-        repeatCount = 1;
-        lastChar = current;
-      }
+  if (lastWasSubtractive) {
+    return {
+      ok: false,
+      error: "Two subtractive pairs in a row are not allowed."
+    };
+  }
 
-      const maxRepeat = romanTokenRules[current].maxRepeat;
-      if (repeatCount > maxRepeat) {
-        return { ok: false, error: `Invalid repetition of "${current}".` };
-      }
+  if (lastSubtractiveSmall === prev && lastSubtractiveLarge === current) {
+    return {
+      ok: false,
+      error: `Repeated subtractive pair "${prev}${current}" is not allowed.`
+    };
+  }
 
-      const prev = input[i - 1];
-      const prevValue = romanValue[prev];
+  return { ok: true };
+}
 
-      if (prevValue < currentValue) {
-        const rules = romanTokenRules[prev];
+function validateCanonical(input) {
+  const parsed = romanToInteger(input);
+  if (!parsed.ok) return parsed;
 
-        if (!rules.canSubtractFrom.has(current)) {
-          return { ok: false, error: `Invalid subtractive pair "${prev}${current}".` };
-        }
+  const canonical = integerToRoman(parsed.value);
+  if (!canonical.ok) return canonical;
 
-        if (repeatCount !== 1) {
-          return { ok: false, error: `Invalid repetition before subtraction near "${prev}${current}".` };
-        }
+  if (canonical.value !== input) {
+    return { ok: false, error: "Roman numeral is not in canonical form." };
+  }
 
-        if (lastWasSubtractive) {
-          return { ok: false, error: "Two subtractive pairs in a row are not allowed." };
-        }
-
-        if (lastSubtractiveSmall === prev && lastSubtractiveLarge === current) {
-          return { ok: false, error: `Repeated subtractive pair "${prev}${current}" is not allowed.` };
-        }
-
-        lastWasSubtractive = true;
-        lastSubtractiveSmall = prev;
-        lastSubtractiveLarge = current;
-      } else {
-        lastWasSubtractive = false;
-      }
-
-      lastTokenValue = currentValue;
-    }
-
-    const parsed = romanToInteger(input);
-    if (!parsed.ok) return parsed;
-
-    const canonical = integerToRoman(parsed.value);
-    if (!canonical.ok) return canonical;
-
-    if (canonical.value !== input) {
-      return { ok: false, error: "Roman numeral is not in canonical form." };
-    }
-
-    return { ok: true, value: input };
-  };
+  return { ok: true };
+}
 
   const romanToInteger = (raw) => {
     const input = String(raw ?? "").trim().toUpperCase();
