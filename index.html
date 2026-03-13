@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Roman Numeral Converter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <main class="page" aria-labelledby="page-title">
+      <section class="card">
+        <header class="header">
+          <h1 id="page-title" class="title">Roman Numeral Converter</h1>
+          <p class="subtitle">Convert integers ⇄ Roman numerals with strict validation.</p>
+        </header>
+
+        <form id="converterForm" class="form" novalidate>
+          <div class="field">
+            <label for="mode" class="label">Conversion</label>
+            <select id="mode" name="mode" class="control" aria-describedby="modeHint">
+              <option value="intToRoman">Integer → Roman</option>
+              <option value="romanToInt">Roman → Integer</option>
+            </select>
+            <div id="modeHint" class="hint">Choose the direction, then enter a value.</div>
+          </div>
+
+          <div class="field">
+            <label for="inputValue" id="inputLabel" class="label">Integer (1–3999)</label>
+            <input
+              id="inputValue"
+              name="inputValue"
+              class="control"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              spellcheck="false"
+              aria-describedby="inputHint"
+              required
+            />
+            <div id="inputHint" class="hint">
+              For integers, only digits are allowed. For Roman numerals, use I,V,X,L,C,D,M.
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" class="button">Convert</button>
+            <button type="button" id="resetBtn" class="button button-secondary">Reset</button>
+          </div>
+
+          <div class="result" aria-live="polite" aria-atomic="true">
+            <div class="result-row">
+              <span class="result-label">Result</span>
+              <output id="resultValue" class="result-value">—</output>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Status</span>
+              <output id="statusValue" class="status">Ready</output>
+            </div>
+          </div>
+        </form>
+
+        <footer class="footer">
+          <p class="footer-text">
+            Rules: strict Roman validation (no invalid subtractive patterns, repeats, or characters). Integer range: 1–3999.
+          </p>
+        </footer>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
