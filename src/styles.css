@@ -154,6 +154,18 @@ body {
   word-break: break-word;
 }
 
+.status.ok {
+  color: var(--ok);
+}
+
+.status.error {
+  color: var(--danger);
+}
+
+.status.neutral {
+  color: inherit;
+}
+
 .footer {
   border-top: 1px solid var(--border);
   margin-top: 16px;

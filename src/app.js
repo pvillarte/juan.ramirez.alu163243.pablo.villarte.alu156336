@@ -13,9 +13,7 @@ const RomanConverterUI = (() => {
 
   const setStatus = (message, kind) => {
     elements.status.textContent = message;
-    elements.status.style.color =
-      kind === "error" ? "var(--danger)" :
-      kind === "ok" ? "var(--ok)" : "";
+    elements.status.className = "status" + (kind ? ` ${kind}` : "");
   };
 
   const clearOutputs = () => {
