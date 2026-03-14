@@ -3,6 +3,9 @@ const RomanConverter = (() => {
   const Ok = (value) => ({ ok: true, value });
   const Err = (error) => ({ ok: false, error });
 
+  const normalizeUpper = (raw) =>
+    String(raw ?? "").trim().toUpperCase();
+
   const romanValue = Object.freeze({
     I: 1,
     V: 5,
@@ -58,7 +61,7 @@ const RomanConverter = (() => {
   };
 
   const romanToInteger = (raw) => {
-    const input = String(raw ?? "").trim().toUpperCase();
+    const input = normalizeUpper(raw);
     if (input.length === 0) {
       return Err("Input cannot be empty.");
     }
@@ -106,7 +109,7 @@ const RomanConverter = (() => {
   const isIntegerInRange = (n) => Number.isInteger(n) && n >= 1 && n <= 3999;
 
   function normalizeInput(raw) {
-    const value = String(raw ?? "").trim().toUpperCase();
+    const value = normalizeUpper(raw);
     if (value.length === 0) {
       return Err("Input cannot be empty.");
     }
