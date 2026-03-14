@@ -40,6 +40,15 @@ const RomanConverterUI = ((converter) => {
     elements.input.focus();
   };
 
+  const runStep = (fn, value) => {
+    const result = fn(value);
+    if (!result.ok) {
+      setStatus(result.error, "error");
+      return null;
+    }
+    return result.value;
+  };
+
   const convert = () => {
     clearOutputs();
 
@@ -47,36 +56,24 @@ const RomanConverterUI = ((converter) => {
     const raw = elements.input.value;
 
     if (mode === "intToRoman") {
-      const parsed = converter.parseIntegerStrict(raw);
-      if (!parsed.ok) {
-        setStatus(parsed.error, "error");
-        return;
-      }
+      const n = runStep(converter.parseIntegerStrict, raw);
+      if (n == null) return;
 
-      const converted = converter.integerToRoman(parsed.value);
-      if (!converted.ok) {
-        setStatus(converted.error, "error");
-        return;
-      }
+      const roman = runStep(converter.integerToRoman, n);
+      if (roman == null) return;
 
-      elements.result.textContent = converted.value;
+      elements.result.textContent = roman;
       setStatus("Converted successfully.", "ok");
       return;
     }
 
-    const validated = converter.validateRomanStrict(raw);
-    if (!validated.ok) {
-      setStatus(validated.error, "error");
-      return;
-    }
+    const validRoman = runStep(converter.validateRomanStrict, raw);
+    if (validRoman == null) return;
 
-    const converted = converter.romanToInteger(validated.value);
-    if (!converted.ok) {
-      setStatus(converted.error, "error");
-      return;
-    }
+    const intValue = runStep(converter.romanToInteger, validRoman);
+    if (intValue == null) return;
 
-    elements.result.textContent = String(converted.value);
+    elements.result.textContent = String(intValue);
     setStatus("Converted successfully.", "ok");
   };
 
