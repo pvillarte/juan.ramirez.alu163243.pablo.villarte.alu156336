@@ -36,6 +36,12 @@ const RomanConverterUI = (() => {
     elements.input.placeholder = isIntToRoman ? "e.g., 1999" : "e.g., MCMXCIX";
   };
 
+  const resetForm = () => {
+    elements.input.value = "";
+    clearOutputs();
+    elements.input.focus();
+  };
+
   const convert = () => {
     clearOutputs();
 
@@ -82,11 +88,7 @@ const RomanConverterUI = (() => {
       e.preventDefault();
       convert();
     });
-    elements.reset.addEventListener("click", () => {
-      elements.input.value = "";
-      clearOutputs();
-      elements.input.focus();
-    });
+    elements.reset.addEventListener("click", resetForm);
 
     setModeLabels();
     clearOutputs();
