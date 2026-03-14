@@ -59,6 +59,9 @@ const RomanConverter = (() => {
     { value: 1, symbol: "I" },
   ]);
 
+  const updateRepeatCount = (current, lastChar, repeatCount) =>
+    current === lastChar ? repeatCount + 1 : 1;
+
   const integerToRoman = (n) => {
     if (!isIntegerInRange(n)) {
       return Err(ERR.INT_RANGE);
@@ -155,7 +158,7 @@ const RomanConverter = (() => {
       const currentValue = romanValues[current];
       const prevValue = romanValues[prev];
 
-      repeatCount = current === lastChar ? repeatCount + 1 : 1;
+      repeatCount = updateRepeatCount(current, lastChar, repeatCount);
       lastChar = current;
 
       const maxRepeat = romanTokenRules[current].maxRepeat;
