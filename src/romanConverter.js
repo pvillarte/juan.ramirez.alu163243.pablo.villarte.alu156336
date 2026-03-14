@@ -23,7 +23,7 @@ const RomanConverter = (() => {
   const normalizeUpper = (raw) =>
     String(raw ?? "").trim().toUpperCase();
 
-  const romanValue = Object.freeze({
+  const romanValues = Object.freeze({
     I: 1,
     V: 5,
     X: 10,
@@ -43,7 +43,7 @@ const RomanConverter = (() => {
     D: { maxRepeat: 1, canSubtractFrom: new Set([]) },
   });
 
-  const integerToRomanMap = Object.freeze([
+  const romanEncodingTable = Object.freeze([
     { value: 1000, symbol: "M" },
     { value: 900, symbol: "CM" },
     { value: 500, symbol: "D" },
@@ -67,7 +67,7 @@ const RomanConverter = (() => {
     let remaining = n;
     let out = "";
 
-    for (const entry of integerToRomanMap) {
+    for (const entry of romanEncodingTable) {
       while (remaining >= entry.value) {
         out += entry.symbol;
         remaining -= entry.value;
@@ -86,8 +86,8 @@ const RomanConverter = (() => {
     let sum = 0;
 
     for (let i = 0; i < input.length; i++) {
-      const current = romanValue[input[i]];
-      const next = i + 1 < input.length ? romanValue[input[i + 1]] : 0;
+      const current = romanValues[input[i]];
+      const next = i + 1 < input.length ? romanValues[input[i + 1]] : 0;
 
       if (!current) {
         return Err(ERR.INVALID_CHAR(input[i]));
@@ -135,7 +135,7 @@ const RomanConverter = (() => {
 
   function validateCharacters(input) {
     for (const ch of input) {
-      if (!romanValue[ch]) {
+      if (!romanValues[ch]) {
         return Err(ERR.INVALID_CHAR(ch));
       }
     }
@@ -152,8 +152,8 @@ const RomanConverter = (() => {
     for (let i = 1; i < input.length; i++) {
       const current = input[i];
       const prev = input[i - 1];
-      const currentValue = romanValue[current];
-      const prevValue = romanValue[prev];
+      const currentValue = romanValues[current];
+      const prevValue = romanValues[prev];
 
       repeatCount = current === lastChar ? repeatCount + 1 : 1;
       lastChar = current;
