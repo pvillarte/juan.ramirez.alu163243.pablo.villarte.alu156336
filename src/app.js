@@ -1,17 +1,21 @@
 const RomanConverterUI = (() => {
+  const $ = (id) => document.getElementById(id);
+
   const elements = {
-    form: document.getElementById("converterForm"),
-    mode: document.getElementById("mode"),
-    input: document.getElementById("inputValue"),
-    inputLabel: document.getElementById("inputLabel"),
-    result: document.getElementById("resultValue"),
-    status: document.getElementById("statusValue"),
-    reset: document.getElementById("resetBtn"),
+    form: $("converterForm"),
+    mode: $("mode"),
+    input: $("inputValue"),
+    inputLabel: $("inputLabel"),
+    result: $("resultValue"),
+    status: $("statusValue"),
+    reset: $("resetBtn"),
   };
 
   const setStatus = (message, kind) => {
     elements.status.textContent = message;
-    elements.status.style.color = kind === "error" ? "var(--danger)" : kind === "ok" ? "var(--ok)" : "";
+    elements.status.style.color =
+      kind === "error" ? "var(--danger)" :
+      kind === "ok" ? "var(--ok)" : "";
   };
 
   const clearOutputs = () => {
@@ -23,7 +27,8 @@ const RomanConverterUI = (() => {
     const mode = elements.mode.value;
     const isIntToRoman = mode === "intToRoman";
 
-    elements.inputLabel.textContent = isIntToRoman ? "Integer (1-3999)" : "Roman numeral (I,V,X,L,C,D,M)";
+    elements.inputLabel.textContent =
+      isIntToRoman ? "Integer (1-3999)" : "Roman numeral (I,V,X,L,C,D,M)";
     elements.input.value = "";
     clearOutputs();
 
