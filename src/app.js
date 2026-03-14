@@ -1,4 +1,4 @@
-const RomanConverterUI = (() => {
+const RomanConverterUI = ((converter) => {
   const $ = (id) => document.getElementById(id);
 
   const elements = {
@@ -47,13 +47,13 @@ const RomanConverterUI = (() => {
     const raw = elements.input.value;
 
     if (mode === "intToRoman") {
-      const parsed = RomanConverter.parseIntegerStrict(raw);
+      const parsed = converter.parseIntegerStrict(raw);
       if (!parsed.ok) {
         setStatus(parsed.error, "error");
         return;
       }
 
-      const converted = RomanConverter.integerToRoman(parsed.value);
+      const converted = converter.integerToRoman(parsed.value);
       if (!converted.ok) {
         setStatus(converted.error, "error");
         return;
@@ -64,13 +64,13 @@ const RomanConverterUI = (() => {
       return;
     }
 
-    const validated = RomanConverter.validateRomanStrict(raw);
+    const validated = converter.validateRomanStrict(raw);
     if (!validated.ok) {
       setStatus(validated.error, "error");
       return;
     }
 
-    const converted = RomanConverter.romanToInteger(validated.value);
+    const converted = converter.romanToInteger(validated.value);
     if (!converted.ok) {
       setStatus(converted.error, "error");
       return;
@@ -93,6 +93,6 @@ const RomanConverterUI = (() => {
   };
 
   return Object.freeze({ bind });
-})();
+})(RomanConverter);
 
 RomanConverterUI.bind();
