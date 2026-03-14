@@ -3,6 +3,23 @@ const RomanConverter = (() => {
   const Ok = (value) => ({ ok: true, value });
   const Err = (error) => ({ ok: false, error });
 
+  const ERR = Object.freeze({
+    EMPTY_INPUT: "Input cannot be empty.",
+    INT_RANGE: "Integer must be in range 1-3999.",
+    ROMAN_RANGE: "Roman value out of supported range (1-3999).",
+    INT_DIGITS_ONLY: "Integer input must contain only digits.",
+    INT_NOT_SAFE: "Integer input is not a safe number.",
+    INVALID_CHAR: (ch) => `Invalid character "${ch}".`,
+    INVALID_REPETITION: (ch) => `Invalid repetition of "${ch}".`,
+    INVALID_SUBTRACTIVE_PAIR: (prev, curr) => `Invalid subtractive pair "${prev}${curr}".`,
+    INVALID_REPETITION_BEFORE_SUB: (prev, curr) =>
+      `Invalid repetition before subtraction near "${prev}${curr}".`,
+    TWO_SUBTRACTIVES: "Two subtractive pairs in a row are not allowed.",
+    REPEATED_SUBTRACTIVE_PAIR: (prev, curr) =>
+      `Repeated subtractive pair "${prev}${curr}" is not allowed.`,
+    NON_CANONICAL: "Roman numeral is not in canonical form."
+  });
+
   const normalizeUpper = (raw) =>
     String(raw ?? "").trim().toUpperCase();
 
@@ -44,7 +61,7 @@ const RomanConverter = (() => {
 
   const integerToRoman = (n) => {
     if (!isIntegerInRange(n)) {
-      return Err("Integer must be in range 1-3999.");
+      return Err(ERR.INT_RANGE);
     }
 
     let remaining = n;
@@ -63,7 +80,7 @@ const RomanConverter = (() => {
   const romanToInteger = (raw) => {
     const input = normalizeUpper(raw);
     if (input.length === 0) {
-      return Err("Input cannot be empty.");
+      return Err(ERR.EMPTY_INPUT);
     }
 
     let sum = 0;
@@ -73,7 +90,7 @@ const RomanConverter = (() => {
       const next = i + 1 < input.length ? romanValue[input[i + 1]] : 0;
 
       if (!current) {
-        return Err(`Invalid character "${input[i]}".`);
+        return Err(ERR.INVALID_CHAR(input[i]));
       }
 
       if (current < next) {
@@ -84,7 +101,7 @@ const RomanConverter = (() => {
     }
 
     if (!isIntegerInRange(sum)) {
-      return Err("Roman value out of supported range (1-3999).");
+      return Err(ERR.ROMAN_RANGE);
     }
 
     return Ok(sum);
@@ -111,7 +128,7 @@ const RomanConverter = (() => {
   function normalizeInput(raw) {
     const value = normalizeUpper(raw);
     if (value.length === 0) {
-      return Err("Input cannot be empty.");
+      return Err(ERR.EMPTY_INPUT);
     }
     return Ok(value);
   }
@@ -119,7 +136,7 @@ const RomanConverter = (() => {
   function validateCharacters(input) {
     for (const ch of input) {
       if (!romanValue[ch]) {
-        return Err(`Invalid character "${ch}".`);
+        return Err(ERR.INVALID_CHAR(ch));
       }
     }
     return Ok();
@@ -143,7 +160,7 @@ const RomanConverter = (() => {
 
       const maxRepeat = romanTokenRules[current].maxRepeat;
       if (repeatCount > maxRepeat) {
-        return Err(`Invalid repetition of "${current}".`);
+        return Err(ERR.INVALID_REPETITION(current));
       }
 
       if (prevValue < currentValue) {
@@ -178,19 +195,19 @@ const RomanConverter = (() => {
     const rules = romanTokenRules[prev];
 
     if (!rules.canSubtractFrom.has(current)) {
-      return Err(`Invalid subtractive pair "${prev}${current}".`);
+      return Err(ERR.INVALID_SUBTRACTIVE_PAIR(prev, current));
     }
 
     if (repeatCount !== 1) {
-      return Err(`Invalid repetition before subtraction near "${prev}${current}".`);
+      return Err(ERR.INVALID_REPETITION_BEFORE_SUB(prev, current));
     }
 
     if (lastWasSubtractive) {
-      return Err("Two subtractive pairs in a row are not allowed.");
+      return Err(ERR.TWO_SUBTRACTIVES);
     }
 
     if (lastSubtractiveSmall === prev && lastSubtractiveLarge === current) {
-      return Err(`Repeated subtractive pair "${prev}${current}" is not allowed.`);
+      return Err(ERR.REPEATED_SUBTRACTIVE_PAIR(prev, current));
     }
 
     return Ok();
@@ -204,7 +221,7 @@ const RomanConverter = (() => {
     if (!canonical.ok) return canonical;
 
     if (canonical.value !== input) {
-      return Err("Roman numeral is not in canonical form.");
+      return Err(ERR.NON_CANONICAL);
     }
 
     return Ok();
@@ -213,18 +230,18 @@ const RomanConverter = (() => {
   const parseIntegerStrict = (raw) => {
     const input = String(raw ?? "").trim();
     if (input.length === 0) {
-      return Err("Input cannot be empty.");
+      return Err(ERR.EMPTY_INPUT);
     }
     if (!/^\d+$/.test(input)) {
-      return Err("Integer input must contain only digits.");
+      return Err(ERR.INT_DIGITS_ONLY);
     }
 
     const n = Number(input);
     if (!Number.isSafeInteger(n)) {
-      return Err("Integer input is not a safe number.");
+      return Err(ERR.INT_NOT_SAFE);
     }
     if (!isIntegerInRange(n)) {
-      return Err("Integer must be in range 1-3999.");
+      return Err(ERR.INT_RANGE);
     }
     return Ok(n);
   };
