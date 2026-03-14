@@ -1,258 +1,163 @@
-const RomanConverter = (() => {
+const integerToRoman = (n) => {
+  if (!isIntegerInRange(n)) return Err(ERR.INT_RANGE);
 
-  const Ok = (value) => ({ ok: true, value });
-  const Err = (error) => ({ ok: false, error });
+  let remaining = n;
+  let out = "";
 
-  const ERR = Object.freeze({
-    EMPTY_INPUT: "Input cannot be empty.",
-    INT_RANGE: "Integer must be in range 1-3999.",
-    ROMAN_RANGE: "Roman value out of supported range (1-3999).",
-    INT_DIGITS_ONLY: "Integer input must contain only digits.",
-    INT_NOT_SAFE: "Integer input is not a safe number.",
-    INVALID_CHAR: (ch) => `Invalid character "${ch}".`,
-    INVALID_REPETITION: (ch) => `Invalid repetition of "${ch}".`,
-    INVALID_SUBTRACTIVE_PAIR: (prev, curr) => `Invalid subtractive pair "${prev}${curr}".`,
-    INVALID_REPETITION_BEFORE_SUB: (prev, curr) =>
-      `Invalid repetition before subtraction near "${prev}${curr}".`,
-    TWO_SUBTRACTIVES: "Two subtractive pairs in a row are not allowed.",
-    REPEATED_SUBTRACTIVE_PAIR: (prev, curr) =>
-      `Repeated subtractive pair "${prev}${curr}" is not allowed.`,
-    NON_CANONICAL: "Roman numeral is not in canonical form."
-  });
-
-  const normalizeUpper = (raw) =>
-    String(raw ?? "").trim().toUpperCase();
-
-  const romanValues = Object.freeze({
-    I: 1,
-    V: 5,
-    X: 10,
-    L: 50,
-    C: 100,
-    D: 500,
-    M: 1000,
-  });
-
-  const romanTokenRules = Object.freeze({
-    I: { maxRepeat: 3, canSubtractFrom: new Set(["V", "X"]) },
-    X: { maxRepeat: 3, canSubtractFrom: new Set(["L", "C"]) },
-    C: { maxRepeat: 3, canSubtractFrom: new Set(["D", "M"]) },
-    M: { maxRepeat: 3, canSubtractFrom: new Set([]) },
-    V: { maxRepeat: 1, canSubtractFrom: new Set([]) },
-    L: { maxRepeat: 1, canSubtractFrom: new Set([]) },
-    D: { maxRepeat: 1, canSubtractFrom: new Set([]) },
-  });
-
-  const romanEncodingTable = Object.freeze([
-    { value: 1000, symbol: "M" },
-    { value: 900, symbol: "CM" },
-    { value: 500, symbol: "D" },
-    { value: 400, symbol: "CD" },
-    { value: 100, symbol: "C" },
-    { value: 90, symbol: "XC" },
-    { value: 50, symbol: "L" },
-    { value: 40, symbol: "XL" },
-    { value: 10, symbol: "X" },
-    { value: 9, symbol: "IX" },
-    { value: 5, symbol: "V" },
-    { value: 4, symbol: "IV" },
-    { value: 1, symbol: "I" },
-  ]);
-
-  const updateRepeatCount = (current, lastChar, repeatCount) =>
-    current === lastChar ? repeatCount + 1 : 1;
-
-  const integerToRoman = (n) => {
-    if (!isIntegerInRange(n)) {
-      return Err(ERR.INT_RANGE);
+  for (const entry of romanEncodingTable) {
+    while (remaining >= entry.value) {
+      out += entry.symbol;
+      remaining -= entry.value;
     }
-
-    let remaining = n;
-    let out = "";
-
-    for (const entry of romanEncodingTable) {
-      while (remaining >= entry.value) {
-        out += entry.symbol;
-        remaining -= entry.value;
-      }
-    }
-
-    return Ok(out);
-  };
-
-  const romanToInteger = (raw) => {
-    const input = normalizeUpper(raw);
-    if (input.length === 0) {
-      return Err(ERR.EMPTY_INPUT);
-    }
-
-    let sum = 0;
-
-    for (let i = 0; i < input.length; i++) {
-      const current = romanValues[input[i]];
-      const next = i + 1 < input.length ? romanValues[input[i + 1]] : 0;
-
-      if (!current) {
-        return Err(ERR.INVALID_CHAR(input[i]));
-      }
-
-      if (current < next) {
-        sum -= current;
-      } else {
-        sum += current;
-      }
-    }
-
-    if (!isIntegerInRange(sum)) {
-      return Err(ERR.ROMAN_RANGE);
-    }
-
-    return Ok(sum);
-  };
-
-  const validateRomanStrict = (raw) => {
-    const input = normalizeInput(raw);
-    if (!input.ok) return input;
-
-    const charCheck = validateCharacters(input.value);
-    if (!charCheck.ok) return charCheck;
-
-    const structureCheck = validateStructure(input.value);
-    if (!structureCheck.ok) return structureCheck;
-
-    const canonicalCheck = validateCanonical(input.value);
-    if (!canonicalCheck.ok) return canonicalCheck;
-
-    return Ok(input.value);
-  };
-
-  const isIntegerInRange = (n) => Number.isInteger(n) && n >= 1 && n <= 3999;
-
-  function normalizeInput(raw) {
-    const value = normalizeUpper(raw);
-    if (value.length === 0) {
-      return Err(ERR.EMPTY_INPUT);
-    }
-    return Ok(value);
   }
 
-  function validateCharacters(input) {
-    for (const ch of input) {
-      if (!romanValues[ch]) {
-        return Err(ERR.INVALID_CHAR(ch));
-      }
-    }
-    return Ok();
+  return Ok(out);
+};
+
+const romanToInteger = (raw) => {
+  const input = normalizeUpper(raw);
+  if (input.length === 0) return Err(ERR.EMPTY_INPUT);
+
+  let sum = 0;
+
+  for (let i = 0; i < input.length; i++) {
+    const current = romanValues[input[i]];
+    const next = i + 1 < input.length ? romanValues[input[i + 1]] : 0;
+
+    if (!current) return Err(ERR.INVALID_CHAR(input[i]));
+
+    sum += current < next ? -current : current;
   }
 
-  function validateStructure(input) {
-    let repeatCount = 1;
-    let lastChar = input[0];
-    let lastWasSubtractive = false;
-    let lastSubtractiveSmall = null;
-    let lastSubtractiveLarge = null;
+  if (!isIntegerInRange(sum)) return Err(ERR.ROMAN_RANGE);
 
-    for (let i = 1; i < input.length; i++) {
-      const current = input[i];
-      const prev = input[i - 1];
-      const currentValue = romanValues[current];
-      const prevValue = romanValues[prev];
+  return Ok(sum);
+};
 
-      repeatCount = updateRepeatCount(current, lastChar, repeatCount);
-      lastChar = current;
+function normalizeInput(raw) {
+  const value = normalizeUpper(raw);
+  if (value.length === 0) return Err(ERR.EMPTY_INPUT);
+  return Ok(value);
+}
 
-      const maxRepeat = romanTokenRules[current].maxRepeat;
-      if (repeatCount > maxRepeat) {
-        return Err(ERR.INVALID_REPETITION(current));
-      }
+function validateCharacters(input) {
+  for (const ch of input) {
+    if (!romanValues[ch]) return Err(ERR.INVALID_CHAR(ch));
+  }
+  return Ok();
+}
 
-      if (prevValue < currentValue) {
-        const subtractCheck = validateSubtractivePair({
-          prev,
-          current,
-          repeatCount,
-          lastWasSubtractive,
-          lastSubtractiveSmall,
-          lastSubtractiveLarge
-        });
-        if (!subtractCheck.ok) return subtractCheck;
+function validateSubtractivePair({
+  prev,
+  current,
+  repeatCount,
+  lastWasSubtractive,
+  lastSubtractiveSmall,
+  lastSubtractiveLarge
+}) {
+  const rules = romanTokenRules[prev];
 
-        lastWasSubtractive = true;
-        lastSubtractiveSmall = prev;
-        lastSubtractiveLarge = current;
-      } else {
-        lastWasSubtractive = false;
-      }
+  if (!rules.canSubtractFrom.has(current))
+    return Err(ERR.INVALID_SUBTRACTIVE_PAIR(prev, current));
+
+  if (repeatCount !== 1)
+    return Err(ERR.INVALID_REPETITION_BEFORE_SUB(prev, current));
+
+  if (lastWasSubtractive)
+    return Err(ERR.TWO_SUBTRACTIVES);
+
+  if (lastSubtractiveSmall === prev && lastSubtractiveLarge === current)
+    return Err(ERR.REPEATED_SUBTRACTIVE_PAIR(prev, current));
+
+  return Ok();
+}
+
+function validateStructure(input) {
+  let repeatCount = 1;
+  let lastChar = input[0];
+  let lastWasSubtractive = false;
+  let lastSubtractiveSmall = null;
+  let lastSubtractiveLarge = null;
+
+  for (let i = 1; i < input.length; i++) {
+    const current = input[i];
+    const prev = input[i - 1];
+    const currentValue = romanValues[current];
+    const prevValue = romanValues[prev];
+
+    repeatCount = updateRepeatCount(current, lastChar, repeatCount);
+    lastChar = current;
+
+    const maxRepeat = romanTokenRules[current].maxRepeat;
+    if (repeatCount > maxRepeat)
+      return Err(ERR.INVALID_REPETITION(current));
+
+    if (prevValue < currentValue) {
+      const check = validateSubtractivePair({
+        prev,
+        current,
+        repeatCount,
+        lastWasSubtractive,
+        lastSubtractiveSmall,
+        lastSubtractiveLarge
+      });
+      if (!check.ok) return check;
+
+      lastWasSubtractive = true;
+      lastSubtractiveSmall = prev;
+      lastSubtractiveLarge = current;
+    } else {
+      lastWasSubtractive = false;
     }
-    return Ok();
   }
 
-  function validateSubtractivePair({
-    prev,
-    current,
-    repeatCount,
-    lastWasSubtractive,
-    lastSubtractiveSmall,
-    lastSubtractiveLarge
-  }) {
-    const rules = romanTokenRules[prev];
+  return Ok();
+}
 
-    if (!rules.canSubtractFrom.has(current)) {
-      return Err(ERR.INVALID_SUBTRACTIVE_PAIR(prev, current));
-    }
+function validateCanonical(input) {
+  const parsed = romanToInteger(input);
+  if (!parsed.ok) return parsed;
 
-    if (repeatCount !== 1) {
-      return Err(ERR.INVALID_REPETITION_BEFORE_SUB(prev, current));
-    }
+  const canonical = integerToRoman(parsed.value);
+  if (!canonical.ok) return canonical;
 
-    if (lastWasSubtractive) {
-      return Err(ERR.TWO_SUBTRACTIVES);
-    }
+  if (canonical.value !== input)
+    return Err(ERR.NON_CANONICAL);
 
-    if (lastSubtractiveSmall === prev && lastSubtractiveLarge === current) {
-      return Err(ERR.REPEATED_SUBTRACTIVE_PAIR(prev, current));
-    }
+  return Ok();
+}
 
-    return Ok();
-  }
+const validateRomanStrict = (raw) => {
+  const input = normalizeInput(raw);
+  if (!input.ok) return input;
 
-  function validateCanonical(input) {
-    const parsed = romanToInteger(input);
-    if (!parsed.ok) return parsed;
+  const chars = validateCharacters(input.value);
+  if (!chars.ok) return chars;
 
-    const canonical = integerToRoman(parsed.value);
-    if (!canonical.ok) return canonical;
+  const structure = validateStructure(input.value);
+  if (!structure.ok) return structure;
 
-    if (canonical.value !== input) {
-      return Err(ERR.NON_CANONICAL);
-    }
+  const canonical = validateCanonical(input.value);
+  if (!canonical.ok) return canonical;
 
-    return Ok();
-  }
+  return Ok(input.value);
+};
 
-  const parseIntegerStrict = (raw) => {
-    const input = String(raw ?? "").trim();
-    if (input.length === 0) {
-      return Err(ERR.EMPTY_INPUT);
-    }
-    if (!/^\d+$/.test(input)) {
-      return Err(ERR.INT_DIGITS_ONLY);
-    }
+const parseIntegerStrict = (raw) => {
+  const input = String(raw ?? "").trim();
+  if (input.length === 0) return Err(ERR.EMPTY_INPUT);
+  if (!/^\d+$/.test(input)) return Err(ERR.INT_DIGITS_ONLY);
 
-    const n = Number(input);
-    if (!Number.isSafeInteger(n)) {
-      return Err(ERR.INT_NOT_SAFE);
-    }
-    if (!isIntegerInRange(n)) {
-      return Err(ERR.INT_RANGE);
-    }
-    return Ok(n);
-  };
+  const n = Number(input);
+  if (!Number.isSafeInteger(n)) return Err(ERR.INT_NOT_SAFE);
+  if (!isIntegerInRange(n)) return Err(ERR.INT_RANGE);
 
-  return Object.freeze({
-    parseIntegerStrict,
-    validateRomanStrict,
-    integerToRoman,
-    romanToInteger,
-  });
-})();
+  return Ok(n);
+};
+
+const RomanConverter = Object.freeze({
+  parseIntegerStrict,
+  validateRomanStrict,
+  integerToRoman,
+  romanToInteger,
+});
