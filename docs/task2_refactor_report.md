@@ -1,4 +1,4 @@
-# Roman Numeral Converter – Refactor Report
+# Roman Numeral Converter - Refactor Report
 
 > Note: This refactor was carried out collaboratively by Juan Ramírez (alu.163243) and Pablo Villarte (alu.156336) using pair programming and shared code reviews.
 
