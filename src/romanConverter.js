@@ -2,7 +2,7 @@ const integerToRoman = (n) => {
   if (!isIntegerInRange(n)) return Err(ERR.INT_RANGE);
 
   let remaining = n;
-  let out = "";
+  let out = '';
 
   for (const entry of romanEncodingTable) {
     while (remaining >= entry.value) {
@@ -144,7 +144,7 @@ const validateRomanStrict = (raw) => {
 };
 
 const parseIntegerStrict = (raw) => {
-  const input = String(raw ?? "").trim();
+  const input = String(raw ?? '').trim();
   if (input.length === 0) return Err(ERR.EMPTY_INPUT);
   if (!/^\d+$/.test(input)) return Err(ERR.INT_DIGITS_ONLY);
 
