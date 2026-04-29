@@ -1,0 +1,14 @@
+{
+  "name": "roman-numeral-converter",
+  "version": "1.0.0",
+  "description": "Roman numeral converter with CI/CD pipeline",
+  "private": true,
+  "scripts": {
+    "test": "node_modules/.bin/mocha-headless-chrome -f src/test.html --args no-sandbox",
+    "lint": "node_modules/eslint/bin/eslint.js -c eslint.config.js src/romanConstants.js src/romanUtils.js src/romanConverter.js src/app.js"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "mocha-headless-chrome": "^4.0.0"
+  }
+}
